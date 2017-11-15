@@ -55,14 +55,31 @@ class Store {
 
     public delete(table, _id): ChangeToken[] {
         const changes = []
-        return changes        
+        let ids
+        let keyName = Store._getKeyName(table)
+        if(typeof _id !== 'string') {
+            ids = this.query(table, _id, {[keyName]: true}).map(item => item[keyName])
+        }
+        else if(!Array.isArray(_id)) {
+            ids = [_id]
+        }
+        else {
+            ids = _id
+        }
+        ids.map(_id => {
+            const oldData = _.get(this.data, `${table}.${_id}`)
+            if(oldData !== undefined) {
+                delete this.data[table][_id]
+                changes.push(new ChangeToken(table, _id, ACTIONS.DELETE, {prevVal: oldData}))
+            }
+        })
+
+        // dispatch changes
+        this.dispatchChanges(changes)
+        return changes
     }
 
-    private transaction = new Transaction((changes) => {
-        changes.map(change => {
-            this.firebase.dispatch(change)
-        })
-    })
+    private transaction = new Transaction(changes => this.firebase.dispatch(changes))
 
     public startTransaction() {
         this.transaction.start()
@@ -89,7 +106,7 @@ class Store {
     }
 
     public debug() {
-        // console.log('debug store', this.data)
+        console.log('debug store', this.data)
     }
 
     public get(table, _id, property?, defaultValue?) {
