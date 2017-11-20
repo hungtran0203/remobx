@@ -2,27 +2,34 @@ import * as _ from 'lodash'
 import ReactionScheduler from './reactionScheduler'
 
 export default class FireBase {
-    private parsers = []
-    constructor(options = {}) {
-        const parsersClass = _.get(options, 'tokenParsers')
-        if(Array.isArray(parsersClass)) {
-            parsersClass.map(Parser => {
-                this.parsers.push(new Parser())
+    private middlewares = []
+    constructor(options = {}, private store) {
+        const middlewares = _.get(options, 'middlewares')
+        if(Array.isArray(middlewares)) {
+            middlewares.map(Middleware => {
+                this.middlewares.push(new Middleware(this.store))
             })
         }
     }
 
-    public subscribe(type, token, target) {
-        this.parsers.map(parser => {
-            parser.subscribe(type, token, target)
+    public subscribe(token, target) {
+        const disposers = []
+        this.middlewares.map(parser => {
+            const disposer = parser.subscribe(token, target)
+            if(typeof disposer === 'function') {
+                disposers.push(disposer)
+            }
         })
+        return () => {
+            disposers.map(d => d())
+        }
     }
 
     public dispatch(changes) {
         const scheduler = new ReactionScheduler()
         changes = Array.isArray(changes) ? changes : [changes]
         changes.map(change => {
-            this.parsers.map(parser => {
+            this.middlewares.map(parser => {
                 scheduler.add(parser.dispatch(change))
             })    
         })

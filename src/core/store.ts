@@ -7,6 +7,7 @@ import {ACTIONS} from '../types/actions'
 import {uuid} from '../utils/uuid'
 import * as objUtils from '../utils/object'
 import Firebase from './firebase'
+import * as invariant from 'invariant'
 
 class Store {
     private data = {}
@@ -14,7 +15,7 @@ class Store {
 
     constructor(public options?) {
         // init firebase
-        this.firebase = new Firebase(this.options)
+        this.firebase = new Firebase(this.options, this)
     }
 
     public insert(table, data): ChangeToken[] {
@@ -112,10 +113,25 @@ class Store {
     public get(table, _id, property?, defaultValue?) {
         return _.get(this.data, `${table}.${_id}${property === undefined ? '' : ('.' + property)}`, defaultValue)
     }
+
+    public subscribe(...args) {
+        return this.firebase.subscribe(...args)
+    }
 }
 
-const createStore = (options={}) => {
+export const createStore = (options={}) => {
     return new Store(options)
 }
 
-export default createStore
+let _store
+export const initStore = (options={}) => {
+    if(!_store) {
+        _store = new Store(options)
+    }
+    return _store
+}
+
+export const getStore = () => {
+    invariant(_store, 'Store is not initialized, use "initStore(options) before gettings access to store.')
+    return _store
+}
