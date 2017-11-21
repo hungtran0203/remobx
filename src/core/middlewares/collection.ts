@@ -57,11 +57,17 @@ export default class CollectionMiddleware {
                 this.subscribers.set(_token.tag, new Set())
             }
             const tokenSubscribers = this.subscribers.get(_token.tag)
+
             tokenSubscribers.add(reaction)
 
             // store prop value at subscribe time
             const {cond} = token
             this.setTrackedToken(reaction, _token.tag, cond, _token)
+
+            if(reaction.isTrackEnabled()) {
+                console.log(`[trackTrace] tracking`, _token.tag, cond)
+            }
+
             return () => {
                 tokenSubscribers.delete(reaction)
             }    

@@ -10,6 +10,7 @@ export class Reaction {
     private _trackTrace = false
     private _isUpdating = false
     public _id = 0
+    private _v = 0
     constructor(public reactionRunner) {
         this._id = ++_auto_incr_id
     }
@@ -21,21 +22,30 @@ export class Reaction {
     }
 
     public whyRun() {
-        console.log('[whyRun]', this._runReasons)
+        console.log(`[whyRun] _v=${this.getVersion()}`, this._runReasons)
     }
 
     public addRunReason(reason) {
         this._runReasons.push(reason)
     }
 
-    public trackTrace(val) {
-        this._trackTrace = !!val
+    public trackTrace(enable) {
+        this._trackTrace = !!enable
+    }
+
+    public isTrackEnabled() {
+        return !!this._trackTrace
+    }
+
+    public getVersion() {
+        return this._v
     }
 
     public update() {
         try {
             globalState._updatingReaction = this
             this._isUpdating = true
+            this._v ++
             this.run()    
         }
         finally {

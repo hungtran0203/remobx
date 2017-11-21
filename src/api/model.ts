@@ -4,7 +4,7 @@ import {getStore} from '../core/store'
 import ModelMiddleware from '../core/middlewares/model'
 import CollectionMiddleware from '../core/middlewares/collection'
 import globalState from '../core/globalstate'
-
+import {Collection} from './collection'
 
 
 const registerTable = (target, options={}) => {
@@ -51,15 +51,21 @@ export abstract class Model {
     static getKeyName: () => any
     static getTableName: () => any
 
-    static insert = function (data) {
+    static getInstance = function (_id) {
         const Model = this
+        if(!this._cacheModelInstances.has(_id)) {
+            this._cacheModelInstances.set(_id, new Model(_id))
+        }
+        return this._cacheModelInstances.get(_id)
+    }
+
+    static insert = function (data) {
         const res = Connection.table(this.getTableName()).insert(data).run()
         const {changes} = res
         let rtn
         if(Array.isArray(changes) && changes.length) {
             const _id = _.get(changes, '0._id')
-            rtn = new Model(_id)
-            this._cacheModelInstances.set(_id, rtn)
+            rtn = this.getInstance(_id)
         }
         return rtn        
     }
@@ -71,10 +77,7 @@ export abstract class Model {
         let rtn
         if(Array.isArray(data)) {
             const _id = _.get(data, `0.${Model.getKeyName()}`)
-            if(!this._cacheModelInstances.has(_id)) {
-                this._cacheModelInstances.set(_id, new Model(_id))
-            }
-            rtn = this._cacheModelInstances.get(_id)
+            rtn = this.getInstance(_id)
         }
         return rtn
     }
@@ -93,16 +96,14 @@ export abstract class Model {
         const _id = valGetter()
 
         if(_id) {
-            if(!this._cacheModelInstances.has(_id)) {
-                this._cacheModelInstances.set(_id, new Model(_id))
-            }
-            rtn = this._cacheModelInstances.get(_id)
+            rtn = rtn = this.getInstance(_id)
         }
 
         // track enable
-        if(globalState._runningReaction) {
+        const reactionContext = globalState.getReactionContext()
+        if(reactionContext) {
             const token = CollectionMiddleware.tokenBuilder({cond, val: _id, valGetter, table: Model.getTableName()})
-            globalState._runningReaction.track(token)
+            reactionContext.track(token)
         }
     
         return rtn
@@ -110,11 +111,21 @@ export abstract class Model {
 
     static find = function (cond) {
         const Model = this
-        const query = Connection.table(Model.getTableName()).find(cond).run()
-        const {data} = query
+        const valGetter = () => {
+            const res = Connection.table(Model.getTableName()).find(cond, {[Model.getKeyName()]: true}).run()
+            return _.get(res, 'data').map(item => item[Model.getKeyName()])
+        }
+        const items = valGetter()
         let rtn
-        if(Array.isArray(data)) {
-            // rtn = new Collection(Model, cond, data)
+        if(Array.isArray(items)) {
+            rtn = Collection.getInstance(Model, items)
+        }
+
+        // track enable
+        const reactionContext = globalState.getReactionContext()
+        if(reactionContext) {
+            const token = CollectionMiddleware.tokenBuilder({cond, val: items, valGetter, table: Model.getTableName()})
+            reactionContext.track(token)
         }
         return rtn
     }
@@ -131,6 +142,10 @@ export abstract class Model {
         Connection.table(this.getTableName()).update(this.getKey(), data).run()
     }
 
+    public delete() {
+        Connection.table(this.getTableName()).delete(this.getKey()).run()
+    }
+
     public getHashKey(prop) {
         return prop === undefined ? `${this.getTableName()}::${this.getKey()}`: `${this.getTableName()}::${this.getKey()}::${prop}`
     }
@@ -142,9 +157,10 @@ export const Field = (options={}) => (target, property) => {
         get: function() {
             // setup property tracking if needed
             const store = getStore()
-            if(globalState._runningReaction) {
+            const reactionContext = globalState.getReactionContext()
+            if(reactionContext) {
                 const token = ModelMiddleware.tokenBuilder(this.getTableName(), this.getKey(), property)
-                globalState._runningReaction.track(token)
+                reactionContext.track(token)
             }
             const propVal = store.get(this.getTableName(), this._id, property, defaultValue)
             return propVal

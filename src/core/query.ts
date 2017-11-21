@@ -21,6 +21,9 @@ const dispatcher = (table, action) => {
         case ACTIONS.UPDATE:
             rtn.changes = store.update(table, _.get(action, '_id'), _.get(action, 'query'))
             break;
+        case ACTIONS.DELETE:
+            rtn.changes = store.delete(table, _.get(action, '_id'))
+            break;
         case ACTIONS.QUERY:
             rtn.data = store.query(table, _.get(action, 'cond'), _.get(action, 'selection'))
             break;
@@ -81,8 +84,13 @@ export class Query {
 
     }
 
-    public delete() {
-
+    public delete(id) {
+        this._resetAction()
+        this.actions.push({
+            type: ACTIONS.DELETE,
+            _id: id,
+        })
+        return this
     }
 
     public run(cb?){
