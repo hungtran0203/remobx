@@ -62,7 +62,7 @@ export default class ModelMiddleware {
             // store prop value at subscribe time
             const {prop, table, _id} = token
             this.setTrackedPropVal(reaction, _token.tag, prop, this.store.get(table, _id, prop))
-            
+
             if(reaction.isTrackEnabled()) {
                 console.log(`[trackTrace] tracking`, _token.tag, prop)
             }

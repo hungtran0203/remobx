@@ -53,6 +53,7 @@ export abstract class Model {
 
     static getInstance = function (_id) {
         const Model = this
+        if(!_id) return null
         if(!this._cacheModelInstances.has(_id)) {
             this._cacheModelInstances.set(_id, new Model(_id))
         }
@@ -109,7 +110,7 @@ export abstract class Model {
         return rtn
     }
 
-    static find = function (cond) {
+    static find = function (cond, options={}) {
         const Model = this
         const valGetter = () => {
             const res = Connection.table(Model.getTableName()).find(cond, {[Model.getKeyName()]: true}).run()
@@ -118,7 +119,7 @@ export abstract class Model {
         const items = valGetter()
         let rtn
         if(Array.isArray(items)) {
-            rtn = Collection.getInstance(Model, items)
+            rtn = Collection.getInstance(Model, items, options)
         }
 
         // track enable
@@ -146,6 +147,10 @@ export abstract class Model {
         Connection.table(this.getTableName()).delete(this.getKey()).run()
     }
 
+    public get(path, defaultValue) {
+        return _.get(this, path, defaultValue)
+    }
+
     public getHashKey(prop) {
         return prop === undefined ? `${this.getTableName()}::${this.getKey()}`: `${this.getTableName()}::${this.getKey()}::${prop}`
     }
@@ -166,6 +171,9 @@ export const Field = (options={}) => (target, property) => {
             return propVal
         },
         set: function(newVal) {
+            // @TODO: perform data validation for field
+
+            this.update({[property]: {$set: newVal}})
             return newVal
         },
         enumerable: true,

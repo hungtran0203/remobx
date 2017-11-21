@@ -28,29 +28,24 @@ it('delete a row', () => {
     const d = autorun(() => {
         whyRun()
         const model = ItemModel.findOne({name: 'new value'})
-        trackTrace(true)
+        // trackTrace(true)
         console.log('autorun', model)
         if(model) {
             console.log('lllll', model.name, model.owner)            
         }
         else {
-            console.log('nananan', model, store.debug())
+            console.log('nananan', model)
         }
-        trackTrace(true)
+        // trackTrace(true)
     })
 
     // d()
     // console.log('xasdasd')
     // store.delete(table, item[0]._id)
     if(item) {
-        // transaction(() => {
-            item.update({
-                name: {$set: 'new value'}
-            })
-    
-            item.update({
-                owner: {$set: 'abcd'}
-            })    
-        // })
+        transaction(() => {
+            item.name = 'new value'
+            item.owner = 'abcd'
+        })
     }
 })

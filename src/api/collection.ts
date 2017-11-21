@@ -3,11 +3,28 @@ import * as invariant from 'invariant'
 
 export class Collection {
 
-    constructor(private Model, private items) {}
+    constructor(private Model, private items, private options={}) {}
 
     public static getInstance(Model, items, options={}) {
-        return new Collection(Model, items)
+        return new Collection(Model, items, options)
     }
+
+    public static fromArray(models) {
+        if(Array.isArray(models)) {
+            const Model = _.get(models, '0.constructor')
+            const items = models.map(model => {
+                invariant(model.constructor === Model, 'Collection::fromArray only accept an array of Models with the same schema')
+                return model.getKey()
+            })
+            return this.getInstance(Model, items)
+        }
+        return null
+    }
+
+    public getType() {
+        return this.Model
+    }
+
     /**
      * @returns the underlying array represented by the collection
      */
@@ -20,7 +37,8 @@ export class Collection {
      * @param size 
      */
     public chunk(size) {
-
+        const chunks = _.chunk(this.items, size)
+        return chunks.map(chunk => Collection.fromArray(chunk))
     }
 
     /**
@@ -38,6 +56,22 @@ export class Collection {
      */
     public forEach(iterator) {
 
+    }
+
+    /**
+     * Iterates over elements of collection, returning the first element callback returns truthy for. 
+     * The callback is invoked with arguments: (value, index|key)
+     */
+    public find(callback, fromIndex?) {
+        return _.find(this.all(), callback, fromIndex)
+    }
+
+    /**
+     * Iterates over elements of collection from right to left, returning the first element callback returns truthy for. 
+     * The callback is invoked with arguments: (value, index|key)
+     */
+    public findLast(callback, fromIndex?) {
+        return _.findLast(this.all(), callback, fromIndex)
     }
 
     /**
@@ -106,7 +140,7 @@ export class Collection {
      * returns all of the collection's key
      */
     public keys() {
-
+        return this.items
     }
 
     /**
@@ -124,7 +158,16 @@ export class Collection {
      * @param callback 
      */
     public map(callback) {
+        invariant(typeof callback === 'function', "map callback argument must be a function")
+        return this.items.map((currentValue, currentIndex) => {
+            return callback(this.Model.getInstance(currentValue), currentIndex)
+        })
+    }
 
+    public lists(property) {
+        return this.items.map(_id => {
+            return _.get(this.Model.getInstance(_id), property)
+        })
     }
 
     /**
@@ -132,63 +175,123 @@ export class Collection {
      * @param callback 
      */
     public partition(callback) {
-
+        const [truthyItems, falsyItems] = _.partition(this.all(), callback)
+        return [Collection.fromArray(truthyItems), Collection.fromArray(falsyItems)]
     }
 
     /**
      * removes and returns the last item from the collection
      */
     public pop() {
-
+        const itemId = this.items.pop()
+        if(itemId) {
+            this._doChange()
+            return this.Model.getInstance(itemId)
+        }
     }
 
-    public push() {
+    /**
+     * add a new item to the end of the collection
+     */
+    public push(item) {
+        const Model = _.get(item, 'constructor')
+        invariant(this.Model === Model, `push item must be an instance of ${this.getType().name}`)
+        this.items.push(item.getKey())
+        this._doChange()
+    }
 
+    /**
+     * Creates a new collection concatenating the collection with any additional arrays and/or values.
+     */
+    public concat(...items) {
+        const Model = _.get(items, '0.constructor')
+        const ids = items.map(item => {
+            invariant(item.constructor === Model, `Collection::concat only accept additional item is instance of ${this.getType().name}`)
+            return item.getKey()
+        })
+        return Collection.getInstance(Model, ids)
     }
 
     /**
      * removes and returns the first item from the collection
      */
     public shift() {
-
+        const itemId = this.items.shift()
+        if(itemId) {
+            this._doChange()
+            return this.Model.getInstance(itemId)
+        }
     }
 
-    public unshift() {
-
+    public unshift(item) {
+        const Model = _.get(item, 'constructor')
+        invariant(this.Model === Model, `unshift item must be an instance of ${this.getType().name}`)
+        this.items.unshift(item.getKey())
+        this._doChange()
     }
 
     /**
      * reduces the collection to a single value, passing the result of each iteration into the subsequent iteration
      */
-    public reduce() {
-
+    public reduce(callback, initialValue) {
+        invariant(typeof callback === 'function', "reduce callback argument must be a function")
+        return this.items.reduce((accumulator, currentValue, currentIndex) => {
+            return callback(accumulator, this.Model.getInstance(currentValue), currentIndex)
+        }, initialValue)
     }
 
     /**
-     * searches the collection for the given value and returns its key if found. If the item is not found, false is returned.
-     * @param callback 
+     * return a collection with items in reversed ordering
      */
-    public search(callback) {
-
+    public reverse() {
+        const reItems = _.reverse([...this.items])
+        return Collection.getInstance(this.Model, reItems)
     }
 
     /**
-     * returns a slice of the collection starting at the given index
+     * returns a slice of the collection starting at the given index without changing collection
      */
     public slice(startIndex, length?) {
-
-    }
-
-    public splice() {
-
+        const sliceItems = this.items.slice(startIndex, length)
+        return Collection.getInstance(this.Model, sliceItems, this.options)
     }
 
     /**
-     * sorts the collection by the given compareFn
-     * @param compareFn 
+     * changes the contents of a collection by removing existing elements and/or adding new elements
+     * @param startIndex 
+     * @param deleteCount 
+     * @param newItems 
      */
-    public sortBy(compareFn, ordering=1) {
+    public splice(startIndex, deleteCount, ...newItems) {
+        let newItemIds = []
+        if(newItems.length) {
+            const Model = _.get(newItems, '0.constructor')
+            newItemIds = newItems.map(item => {
+                invariant(item.constructor === Model, `splice only accept new item instance of ${this.getType().name}`)
+                return item.getKey()
+            })
+        }
+        const deletedItems = this.items.splice(startIndex, deleteCount, ...newItemIds)
+        this._doChange()
+        return Collection.getInstance(this.Model, deletedItems)
+    }
 
+    /**
+     * return a collection that is sorted by the given compareFn
+     * @param iteratee: The iteratees to sort by
+     */
+    public sortBy(iteratee) {
+        const sortedItems = _.sortBy(this.all(), iteratee)
+        return Collection.fromArray(sortedItems)
+    }
+
+    /**
+     * return a collection that is sorted by the given compareFn
+     * @param iteratee: The iteratees to sort by
+     */
+    public orderBy(iteratee, orders?) {
+        const orderedItems = _.orderBy(this.all(), iteratee, orders)
+        return Collection.fromArray(orderedItems)
     }
 
     /**
@@ -196,5 +299,12 @@ export class Collection {
      */
     public size() {
         return this.items.length
+    }
+
+    private _doChange() {
+        const onChange = _.get(this.options, 'onChange')
+        if(typeof onChange === 'function') {
+            onChange(this.items)
+        }
     }
 }

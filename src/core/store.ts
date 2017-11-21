@@ -131,7 +131,17 @@ export const initStore = (options={}) => {
     return _store
 }
 
-export const getStore = () => {
+import ModelMiddleware from './middlewares/model'
+import CollectionMiddleware from './middlewares/collection'
+
+const initDefaultStore = () => {
+    initStore({middlewares: [ModelMiddleware, CollectionMiddleware]})
+}
+
+export const getStore = (initDefault=true) => {
+    if(initDefault && !_store) {
+        initDefaultStore()
+    }
     invariant(_store, 'Store is not initialized, use "initStore(options) before gettings access to store.')
     return _store
 }
