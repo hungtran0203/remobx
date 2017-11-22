@@ -38,7 +38,7 @@ export class Collection {
      */
     public chunk(size) {
         const chunks = _.chunk(this.items, size)
-        return chunks.map(chunk => Collection.fromArray(chunk))
+        return chunks.map(chunk => Collection.getInstance(this.Model, chunk, this.options))
     }
 
     /**
@@ -83,7 +83,7 @@ export class Collection {
         const filterIds = this.items.filter((id, index) => {
             return callback(this.Model.getInstance(id), index)
         })
-        return Collection.getInstance(this.Model, filterIds)
+        return Collection.getInstance(this.Model, filterIds, this.options)
     }
 
     /**

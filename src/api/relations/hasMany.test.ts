@@ -36,7 +36,7 @@ it('hasMany relation', () => {
             console.log('owner is', item.comments.size(), item.comments.lists('text'))
             console.log(item.comments.sortBy(['text']).lists('text'))
 
-            const m = item.comments.find({text: 'comment'})
+            const m = item.comments.find({text: 'commentx'})
             if(m) {
                 console.log('asdasdasd', m.getKey())
             }

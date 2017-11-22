@@ -42,10 +42,7 @@ export const Table = (options={}) => {
 }
 
 export abstract class Model {
-    protected data = {}
-    constructor(protected _id){
-        
-    }
+    constructor(protected _id){}
 
     static _cacheModelInstances = new Map()
     static getKeyName: () => any
@@ -117,10 +114,7 @@ export abstract class Model {
             return _.get(res, 'data').map(item => item[Model.getKeyName()])
         }
         const items = valGetter()
-        let rtn
-        if(Array.isArray(items)) {
-            rtn = Collection.getInstance(Model, items, options)
-        }
+        let rtn = Collection.getInstance(Model, items, options)
 
         // track enable
         const reactionContext = globalState.getReactionContext()
