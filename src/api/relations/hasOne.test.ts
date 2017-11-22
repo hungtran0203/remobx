@@ -25,9 +25,8 @@ class UserModel extends Model {
 
 
 it('hasOne relation', () => {
-    const newItem = {name: 'item1'}
-    const item = ItemModel.insert(newItem)
     const user = UserModel.insert({name: 'hungtran'})
+    const item = ItemModel.insert({name: 'item1', owner: user})
     
     autorun(() => {
         console.log('autorun', item)
@@ -40,7 +39,7 @@ it('hasOne relation', () => {
 
     if(item) {
         transaction(() => {
-            item.name = 'new value'
+            // item.name = 'new value'
             item.owner = user
         })
     }

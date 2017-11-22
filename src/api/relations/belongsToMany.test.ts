@@ -36,16 +36,18 @@ class UserTeam extends Model {
     @hasOne(() => Team)
     public team
 
-    @Field()
+    @Field({defaultValue: Date.now})
     public joinedAt
 
-    @Field()
+    @Field({defaultValue: 'registered'})
     public role
 
 }
 
 
 it('belongsToMany relation', () => {
+    Team.ensureData({name: 'team3'})
+
     const team1 = Team.insert({name: 'team1'})
     const team2 = Team.insert({name: 'team2'})
 
@@ -53,9 +55,9 @@ it('belongsToMany relation', () => {
     const user2 = User.insert({name: 'user2'})
     const user3 = User.insert({name: 'user3'})
 
-    UserTeam.insert({userId: user1.getKey(), teamId: team1.getKey(), role: 'registered', joinedAt: Date.now()})
-    UserTeam.insert({userId: user2.getKey(), teamId: team1.getKey(), role: 'registered', joinedAt: Date.now()})
-    UserTeam.insert({userId: user3.getKey(), teamId: team2.getKey(), role: 'registered', joinedAt: Date.now()})
+    UserTeam.insert({user: user1, team: team1})
+    UserTeam.insert({user: user2, team: team1})
+    UserTeam.insert({user: user3, team: team2, role: 'admin'})
     
     autorun(() => {
         console.log('autorun')

@@ -5,7 +5,8 @@ import ModelMiddleware from '../core/middlewares/model'
 import CollectionMiddleware from '../core/middlewares/collection'
 import globalState from '../core/globalstate'
 import {Collection} from './collection'
-
+import {setDefinition, listDefinitions} from './definition'
+import * as invariant from 'invariant'
 
 const registerTable = (target, options={}) => {
     const {tableName, keyName = '_id'} = options as any
@@ -57,8 +58,26 @@ export abstract class Model {
         return this._cacheModelInstances.get(_id)
     }
 
+    static ensureData = function (data, options={}) {
+        // get list of field defined via schema
+        const _data = {...data}
+        const definitions = listDefinitions(this) as any
+        definitions && definitions.forEach((definition, property) => {
+            const {ensureData} = definition
+            if(typeof ensureData === 'function') {
+                ensureData(_data, options)
+            }
+        })
+
+        return _data
+    }
+
+    static new = function (data) {
+        return this.insert(data)
+    }
+
     static insert = function (data) {
-        const res = Connection.table(this.getTableName()).insert(data).run()
+        const res = Connection.table(this.getTableName()).insert(this.ensureData(data)).run()
         const {changes} = res
         let rtn
         if(Array.isArray(changes) && changes.length) {
@@ -152,6 +171,23 @@ export abstract class Model {
 
 export const Field = (options={}) => (target, property) => {
     const defaultValue = _.get(options, 'defaultValue')
+    const isRequired = _.get(options, 'required')
+    // set definition for this field
+    setDefinition(target.constructor, property, {
+        ...options, 
+        name: 'Field', 
+        type: Field,
+        ensureData: (data, opt={}) => {
+            let val = _.get(data, property, defaultValue)
+            val = typeof val === 'function' ? val() : val
+            // check required
+            invariant(!(isRequired && val === undefined), `Missing value for required field ${property}`)
+            _.set(data, property, val)
+        },
+        validation: () => {
+        },
+    })
+
     Object.defineProperty(target, property, {
         get: function() {
             // setup property tracking if needed

@@ -1,10 +1,29 @@
 import * as _ from 'lodash'
 import {Field} from '../model'
+import {setDefinition} from '../definition'
 
 export const hasOne = (typeFunction, options={}) => {
     return (target, property) => {
-
         const ownerKey = _.get(options, 'ownerKey', `${property}Id`)
+        
+        // set definition for this field
+        setDefinition(target.constructor, property, {
+            ...options, 
+            name: 'Field', 
+            type: Field,
+            ensureData: (data, opt={}) => {
+                const Model = typeFunction()                
+                let val = _.get(data, property)
+                if(val instanceof Model) {
+                    _.set(data, ownerKey, val.getKey())
+                }
+                delete data[property]
+            },
+            validation: () => {
+
+            },
+        })
+
 
         // define relation to property
         Object.defineProperty(target, property, {
