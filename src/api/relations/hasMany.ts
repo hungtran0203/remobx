@@ -2,12 +2,35 @@ import * as _ from 'lodash'
 import {Field} from '../model'
 import {Collection} from '../collection'
 import * as invariant from 'invariant'
+import {setDefinition} from '../definition'
 
 export const hasMany = (typeFunction, options={}) => {
     return (target, property) => {
 
         const ownerKey = _.get(options, 'ownerKey', `${property}Ids`)
 
+        // set definition for this field
+        setDefinition(target.constructor, property, {
+            ...options, 
+            name: 'hasMany', 
+            type: hasMany,
+            ensureData: (data, opt={}) => {
+                const Model = typeFunction()                
+                let val = _.get(data, property)
+                if(Array.isArray(val)) {
+                    val = Collection.fromArray(val)
+                }
+                if(val.getType() === Model) {
+                    _.set(data, ownerKey, val.keys())
+                }
+                delete data[property]
+            },
+            validation: () => {
+
+            },
+        })
+
+        
         // define relation to property
         Object.defineProperty(target, property, {
             get: function() {

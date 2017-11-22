@@ -9,8 +9,8 @@ export const hasOne = (typeFunction, options={}) => {
         // set definition for this field
         setDefinition(target.constructor, property, {
             ...options, 
-            name: 'Field', 
-            type: Field,
+            name: 'hasOne', 
+            type: hasOne,
             ensureData: (data, opt={}) => {
                 const Model = typeFunction()                
                 let val = _.get(data, property)
@@ -23,7 +23,6 @@ export const hasOne = (typeFunction, options={}) => {
 
             },
         })
-
 
         // define relation to property
         Object.defineProperty(target, property, {

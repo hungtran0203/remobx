@@ -25,9 +25,8 @@ class CommentModel extends Model {
 
 
 it('hasMany relation', () => {
-    const newItem = {name: 'item1'}
-    const item = ItemModel.insert(newItem)
     const comments = [CommentModel.insert({text: 'comment1'}), CommentModel.insert({text: 'comment2'})]
+    const item = ItemModel.insert({name: 'item1', comments})
     
     autorun(() => {
         console.log('autorun')
