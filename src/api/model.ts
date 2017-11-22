@@ -1,12 +1,9 @@
 import Connection from '../core/connection'
 import * as _ from 'lodash'
-import {getStore} from '../core/store'
-import ModelMiddleware from '../core/middlewares/model'
 import CollectionMiddleware from '../core/middlewares/collection'
 import globalState from '../core/globalstate'
 import {Collection} from './collection'
-import {setDefinition, listDefinitions} from './definition'
-import * as invariant from 'invariant'
+import {listDefinitions} from './definition'
 
 const registerTable = (target, options={}) => {
     const {tableName, keyName = '_id'} = options as any
@@ -169,44 +166,3 @@ export abstract class Model {
     }
 }
 
-export const Field = (options={}) => (target, property) => {
-    const defaultValue = _.get(options, 'defaultValue')
-    const isRequired = _.get(options, 'required')
-    // set definition for this field
-    setDefinition(target.constructor, property, {
-        ...options, 
-        name: 'Field', 
-        type: Field,
-        ensureData: (data, opt={}) => {
-            let val = _.get(data, property, defaultValue)
-            val = typeof val === 'function' ? val() : val
-            // check required
-            invariant(!(isRequired && val === undefined), `Missing value for required field ${property}`)
-            _.set(data, property, val)
-        },
-        validation: () => {
-        },
-    })
-
-    Object.defineProperty(target, property, {
-        get: function() {
-            // setup property tracking if needed
-            const store = getStore()
-            const reactionContext = globalState.getReactionContext()
-            if(reactionContext) {
-                const token = ModelMiddleware.tokenBuilder(this.getTableName(), this.getKey(), property)
-                reactionContext.track(token)
-            }
-            const propVal = store.get(this.getTableName(), this._id, property, defaultValue)
-            return propVal
-        },
-        set: function(newVal) {
-            // @TODO: perform data validation for field
-
-            this.update({[property]: {$set: newVal}})
-            return newVal
-        },
-        enumerable: true,
-        configurable: true
-    })
-}

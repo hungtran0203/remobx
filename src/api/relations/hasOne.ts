@@ -1,8 +1,13 @@
 import * as _ from 'lodash'
-import {Field} from '../model'
+import {Field} from '../field'
 import {setDefinition} from '../definition'
 
-export const hasOne = (typeFunction, options={}) => {
+export type hasOneOptions = {
+    ownerKey?: string,
+    validation?: Function | object
+}
+
+export const hasOne = (typeFunction:Function, options:hasOneOptions={}) => {
     return (target, property) => {
         const ownerKey = _.get(options, 'ownerKey', `${property}Id`)
         

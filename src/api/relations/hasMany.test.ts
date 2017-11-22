@@ -1,6 +1,7 @@
 import {autorun} from '../autorun'
 import {transaction} from '../transaction'
-import {Model, Field, Table} from '../model'
+import {Model, Table} from '../model'
+import {Field} from '../field'
 import {hasMany} from './hasMany'
 
 @Table({

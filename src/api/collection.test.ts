@@ -1,13 +1,10 @@
-import {initStore} from '../core/store'
-import ModelMiddleware from '../core/middlewares/model'
-import CollectionMiddleware from '../core/middlewares/collection'
 import {autorun} from './autorun'
 import {whyRun} from './whyRun'
 import {transaction} from './transaction'
 import {trackTrace} from './trackTrace'
-import {Model, Field, Table} from './model'
+import {Model, Table} from './model'
+import {Field} from './field'
 
-const store = initStore({middlewares: [ModelMiddleware, CollectionMiddleware]})
 
 @Table({
     tableName: 'items',

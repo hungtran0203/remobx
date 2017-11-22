@@ -1,10 +1,15 @@
 import * as _ from 'lodash'
-import {Field} from '../model'
+import {Field} from '../field'
 import {Collection} from '../collection'
 import * as invariant from 'invariant'
 import {setDefinition} from '../definition'
 
-export const hasMany = (typeFunction, options={}) => {
+export type hasManyOptions = {
+    ownerKey?: string,
+    validation?: Function | object
+}
+
+export const hasMany = (typeFunction:Function, options:hasManyOptions={}) => {
     return (target, property) => {
 
         const ownerKey = _.get(options, 'ownerKey', `${property}Ids`)
