@@ -55,7 +55,7 @@ function generateBundledModule(inputFile, outputFile, format) {
 
     return rollup
         .rollup({
-            entry: inputFile,
+            input: inputFile,
             plugins: rollupPlugins
         })
         .then(bundle =>

@@ -2,11 +2,8 @@ import ChangeToken from './changeToken'
 import Transaction from './transaction'
 import * as _ from 'lodash-es'
 
-import * as update_ from 'immutability-helper'
-let update = (<any>update_)
-
-import * as sift_ from 'sift'
-let sift = (<any>sift_)
+let update = require('immutability-helper')
+let sift = require('sift')
 
 import {ACTIONS} from '../types/actions'
 import {uuid} from '../utils/uuid'
