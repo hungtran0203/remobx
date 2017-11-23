@@ -1,8 +1,7 @@
 import * as _ from 'lodash-es'
 import {Field} from '../field'
 import {Collection} from '../collection'
-import * as invariant_ from 'invariant'
-let invariant = (<any>invariant_)
+import {invariant} from '../../utils'
 import {setDefinition} from '../definition'
 
 export type hasManyOptions = {

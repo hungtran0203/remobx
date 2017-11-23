@@ -1,6 +1,5 @@
 import * as _ from 'lodash-es'
-import * as invariant_ from 'invariant'
-let invariant = (<any>invariant_)
+import {invariant} from '../utils'
 
 export class Collection {
 

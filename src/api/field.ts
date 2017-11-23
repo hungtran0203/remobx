@@ -1,7 +1,6 @@
 import {getStore} from '../core/store'
 import ModelMiddleware from '../core/middlewares/model'
-import * as invariant_ from 'invariant'
-let invariant = (<any>invariant_)
+import {invariant} from '../utils'
 
 import {setDefinition} from './definition'
 import globalState from '../core/globalstate'
