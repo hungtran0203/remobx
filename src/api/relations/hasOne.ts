@@ -1,4 +1,4 @@
-import * as _ from 'lodash'
+import * as _ from 'lodash-es'
 import {Field} from '../field'
 import {setDefinition} from '../definition'
 

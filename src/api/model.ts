@@ -1,5 +1,5 @@
 import Connection from '../core/connection'
-import * as _ from 'lodash'
+import * as _ from 'lodash-es'
 import CollectionMiddleware from '../core/middlewares/collection'
 import globalState from '../core/globalstate'
 import {Collection} from './collection'

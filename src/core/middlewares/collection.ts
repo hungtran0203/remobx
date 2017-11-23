@@ -1,5 +1,5 @@
 import ChangeToken from '../changeToken'
-import * as _ from 'lodash'
+import * as _ from 'lodash-es'
 import {ACTIONS} from '../../types/actions'
 export const PARSER_TYPE = 'collection'
 

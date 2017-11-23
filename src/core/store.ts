@@ -1,15 +1,22 @@
 import ChangeToken from './changeToken'
 import Transaction from './transaction'
-import * as _ from 'lodash'
-import * as update from 'immutability-helper'
-import sift from 'sift'
+import * as _ from 'lodash-es'
+
+import * as update_ from 'immutability-helper'
+let update = (<any>update_)
+
+import * as sift_ from 'sift'
+let sift = (<any>sift_)
+
 import {ACTIONS} from '../types/actions'
 import {uuid} from '../utils/uuid'
 import * as objUtils from '../utils/object'
 import Firebase from './firebase'
-import * as invariant from 'invariant'
 
-class Store {
+import * as invariant_ from 'invariant'
+let invariant = (<any>invariant_)
+
+export class Store {
     private data = {}
     private firebase
 

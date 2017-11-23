@@ -1,9 +1,11 @@
 import {getStore} from '../core/store'
 import ModelMiddleware from '../core/middlewares/model'
-import * as invariant from 'invariant'
+import * as invariant_ from 'invariant'
+let invariant = (<any>invariant_)
+
 import {setDefinition} from './definition'
 import globalState from '../core/globalstate'
-import * as _ from 'lodash'
+import * as _ from 'lodash-es'
 
 export type FieldOptions = {
     validation?: Function | object,

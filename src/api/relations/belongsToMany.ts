@@ -1,6 +1,9 @@
-import * as _ from 'lodash'
+import * as _ from 'lodash-es'
 import {Collection} from '../collection'
-import * as invariant from 'invariant'
+
+import * as invariant_ from 'invariant'
+let invariant = (<any>invariant_)
+
 import {setDefinition} from '../definition'
 
 export type belongsToManyOptions = {

@@ -1,2 +1,3 @@
 export * from './hasOne'
-export * from './define'
+export * from './hasMany'
+export * from './belongsToMany'

@@ -1,4 +1,4 @@
-import * as _ from 'lodash'
+import * as _ from 'lodash-es'
 
 export const isObject = (val) => {
     return (typeof val === 'object') && val !== null && !Array.isArray(val)
