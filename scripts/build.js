@@ -104,7 +104,7 @@ function build() {
             "es"
         )
     ]).then(() => {
-        // generateUmd()
+        generateUmd()
         // generateMinified()
         // copyFlowDefinitions()
         fs.removeSync(".build.cjs")
