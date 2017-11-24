@@ -1,12 +1,35 @@
 let _ = require('lodash')
 import {invariant} from '../utils'
+import globalState from '../core/globalstate'
+import CollectionMiddleware from '../core/middlewares/collection'
+
+/*
+    collection is an ordered of similiar model instances
+*/
+
+export type CollectionOptions = {
+    resolver?: Function,
+    items?: any[],
+    onChange?: Function,
+}
 
 export class Collection {
+    private get items() {
+        const getter = _.get(this.options, 'resolver')
+        if(typeof getter === 'function') {
+            let items = getter()
 
-    constructor(private Model, private items, private options={}) {}
+            // access to all will trigger collection tracking
+            this._track(items)
+            return items
+        }
+        return _.get(this.options, 'items', [])
+    }
 
-    public static getInstance(Model, items, options={}) {
-        return new Collection(Model, items, options)
+    constructor(private Model, private options:CollectionOptions={}) {}
+
+    public static getInstance(Model, options:CollectionOptions={}) {
+        return new Collection(Model, options)
     }
 
     public static fromArray(models) {
@@ -16,7 +39,9 @@ export class Collection {
                 invariant(model.constructor === Model, 'Collection::fromArray only accept an array of Models with the same schema')
                 return model.getKey()
             })
-            return this.getInstance(Model, items)
+
+            // init collection from array does not have resolver so it will not be able to track
+            return this.getInstance(Model, {items})
         }
         return null
     }
@@ -25,6 +50,14 @@ export class Collection {
         return this.Model
     }
 
+    private _track(items) {
+        const reactionContext = globalState.getReactionContext()
+        let valGetter = _.get(this.options, 'resolver')
+        if(reactionContext && valGetter) {
+            const token = CollectionMiddleware.tokenBuilder({initVal: items, valGetter, table: this.Model.getTableName()})
+            reactionContext.track(token)
+        }
+    }
     /**
      * @returns the underlying array represented by the collection
      */
@@ -38,7 +71,7 @@ export class Collection {
      */
     public chunk(size) {
         const chunks = _.chunk(this.items, size)
-        return chunks.map(chunk => Collection.getInstance(this.Model, chunk, this.options))
+        return chunks.map(chunk => Collection.getInstance(this.Model, {...this.options, items: chunk}))
     }
 
     /**
@@ -78,12 +111,9 @@ export class Collection {
      * filters the collection using the given callback, keeping only those items that pass a given truth test
      * @param callback 
      */
-    public filter(callback) {
-        invariant(typeof callback === 'function', "filter callback argument must be a function")
-        const filterIds = this.items.filter((id, index) => {
-            return callback(this.Model.getInstance(id), index)
-        })
-        return Collection.getInstance(this.Model, filterIds, this.options)
+    public filter(predicate) {
+        const orderedItems = _.filter(this.all(), predicate)
+        return Collection.fromArray(orderedItems)        
     }
 
     /**
@@ -111,7 +141,7 @@ export class Collection {
      * @param path 
      */
     public get(path, defaultValue?) {
-
+        return _.get(this.all(), path, defaultValue)
     }
 
     /**
@@ -119,21 +149,21 @@ export class Collection {
      * @param key 
      */
     public has(key) {
-
+        return this.items.indexOf(key) >= 0 
     }
 
     /**
      * returns true if the collection is empty; otherwise, false is returned
      */
     public isEmpty() {
-
+        return !this.items.length
     }
 
     /**
      * returns true if the collection is not empty; otherwise, false is returned
      */
     public isNotEmpty() {
-
+        return !!this.items.length
     }
 
     /**
@@ -180,24 +210,25 @@ export class Collection {
     }
 
     /**
-     * removes and returns the last item from the collection
+     * return new collection without the last item compares to the collection
      */
     public pop() {
-        const itemId = this.items.pop()
-        if(itemId) {
-            this._doChange()
-            return this.Model.getInstance(itemId)
+        if(this.size()) {
+            const items = this.items.slice(0, this.items.length - 1)
+            this._doChange(items)
+            return Collection.getInstance(this.Model, {items})
         }
     }
 
     /**
-     * add a new item to the end of the collection
+     * return new collection with the additional item at the end
      */
     public push(item) {
         const Model = _.get(item, 'constructor')
         invariant(this.Model === Model, `push item must be an instance of ${this.getType().name}`)
-        this.items.push(item.getKey())
-        this._doChange()
+        const items = this.items.concat(item.getKey())
+        this._doChange(items)
+        return Collection.getInstance(Model, {items})
     }
 
     /**
@@ -209,25 +240,26 @@ export class Collection {
             invariant(item.constructor === Model, `Collection::concat only accept additional item is instance of ${this.getType().name}`)
             return item.getKey()
         })
-        return Collection.getInstance(Model, ids)
+        return Collection.getInstance(Model, {items: ids})
     }
 
     /**
      * removes and returns the first item from the collection
      */
     public shift() {
-        const itemId = this.items.shift()
-        if(itemId) {
-            this._doChange()
-            return this.Model.getInstance(itemId)
+        if(this.size()) {
+            const items = this.items.slice(1)
+            this._doChange(items)
+            return Collection.getInstance(this.Model, {items})
         }
     }
 
     public unshift(item) {
         const Model = _.get(item, 'constructor')
         invariant(this.Model === Model, `unshift item must be an instance of ${this.getType().name}`)
-        this.items.unshift(item.getKey())
-        this._doChange()
+        const items = [item.getKeys()].concat(this.items)
+        this._doChange(items)
+        return Collection.getInstance(Model, {items})
     }
 
     /**
@@ -253,7 +285,7 @@ export class Collection {
      */
     public slice(startIndex, length?) {
         const sliceItems = this.items.slice(startIndex, length)
-        return Collection.getInstance(this.Model, sliceItems, this.options)
+        return Collection.getInstance(this.Model, {...this.options, items: sliceItems})
     }
 
     /**
@@ -272,7 +304,7 @@ export class Collection {
             })
         }
         const deletedItems = this.items.splice(startIndex, deleteCount, ...newItemIds)
-        this._doChange()
+        this._doChange(deletedItems)
         return Collection.getInstance(this.Model, deletedItems)
     }
 
@@ -298,13 +330,13 @@ export class Collection {
      * return size of the collection
      */
     public size() {
-        return this.items.length
+         return this.items.length
     }
 
-    private _doChange() {
+    private _doChange(items) {
         const onChange = _.get(this.options, 'onChange')
         if(typeof onChange === 'function') {
-            onChange(this.items)
+            onChange(items)
         }
     }
 }

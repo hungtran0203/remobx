@@ -27,6 +27,9 @@ const dispatcher = (table, action) => {
         case ACTIONS.QUERY:
             rtn.data = store.query(table, _.get(action, 'cond'), _.get(action, 'selection'))
             break;
+        case ACTIONS.FIND:
+            rtn.data = store.find(table, _.get(action, '_id'), _.get(action, 'selection'))
+            break;
     }
     return rtn
 }
@@ -35,9 +38,10 @@ export class Query {
     private actions = []
     constructor(private options={}) {}
 
-    public findById(id): Query {
+    public findById(id, selection?): Query {
         this.actions.push({
-            type: ACTIONS.QUERY,
+            type: ACTIONS.FIND,
+            _id: id,
         })
         return this
     }

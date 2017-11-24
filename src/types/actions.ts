@@ -5,6 +5,7 @@ export enum ACTIONS {
     DELETE = 'delete',
 
     QUERY = 'query',
+    FIND = 'find',
 
     LOAD = 'load',
     BULK = 'bulk',

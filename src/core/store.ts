@@ -32,12 +32,14 @@ export class Store {
 
     public update(table, _id, query): ChangeToken[] {
         const changes = []
-        const oldData = this.data[table][_id]
         if(_id) {
-            _.set(this.data, `${table}.${_id}`, update(this.data[table][_id], query))
-        }
-        if(oldData !== this.data[table][_id]) {
-            changes.push(new ChangeToken(table, _id, ACTIONS.UPDATE, {nextVal: this.data[table[_id]], prevVal: oldData}))
+            const oldData = this.data[table][_id]
+            if(oldData) {
+                _.set(this.data, `${table}.${_id}`, update(oldData, query))                
+                if(oldData !== this.data[table][_id]) {
+                    changes.push(new ChangeToken(table, _id, ACTIONS.UPDATE, {nextVal: this.data[table[_id]], prevVal: oldData}))
+                }
+            }
         }
         // dispatch changes
         this.dispatchChanges(changes)
@@ -55,6 +57,11 @@ export class Store {
             }
         })    
         return items
+    }
+
+    public find(table, id, selection={}) {
+        const tableData = _.get(this.data, table, {})
+        return _.get(tableData, id)
     }
 
     public delete(table, _id): ChangeToken[] {

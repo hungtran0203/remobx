@@ -8,9 +8,18 @@ type ParsedToken = {
     tag: string,
     prop: string,
 }
+
+type SubscribeToken = {
+    type: string,
+    table: string,
+    _id: string,
+    prop: string,
+    description?: string,
+}
+
 export default class ModelMiddleware {
     static type = PARSER_TYPE
-    static tokenBuilder(tableName, _id, prop) {
+    static tokenBuilder(tableName, _id, prop):SubscribeToken {
         return {
             type: PARSER_TYPE,
             table: tableName,

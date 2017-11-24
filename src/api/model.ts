@@ -1,6 +1,6 @@
 import Connection from '../core/connection'
 let _ = require('lodash')
-import CollectionMiddleware from '../core/middlewares/collection'
+import ModelMiddleware from '../core/middlewares/model'
 import globalState from '../core/globalstate'
 import {Collection} from './collection'
 import {listDefinitions} from './definition'
@@ -86,59 +86,34 @@ export abstract class Model {
 
     static findById = function (_id) {
         const Model = this
-        const query = Connection.table(Model.getTableName()).find({[Model.getKeyName()]: _id}, {[Model.getKeyName()]: true}).run()
+        const query = Connection.table(Model.getTableName()).findById(_id, {[Model.getKeyName()]: true}).run()
         const {data} = query
         let rtn
-        if(Array.isArray(data)) {
-            const _id = _.get(data, `0.${Model.getKeyName()}`)
-            rtn = this.getInstance(_id)
+        const reactionContext = globalState.getReactionContext()
+        if(reactionContext) {
+            const token = ModelMiddleware.tokenBuilder(this.getTableName(), _id, Model.getKeyName())
+            reactionContext.track(token)
+        }
+        
+        if(data) {
+            return this.getInstance(_id)
         }
         return rtn
     }
 
 
     static findOne = function (cond) {
-        const Model = this
-        const valGetter = () => {
-            const res = Connection.table(Model.getTableName()).find(cond, {[Model.getKeyName()]: true}).run()
-            const {data} = res as any
-            if(Array.isArray(data) && data.length) {
-                return _.get(data, `0.${Model.getKeyName()}`)
-            }
-        }
-        let rtn
-        const _id = valGetter()
-
-        if(_id) {
-            rtn = rtn = this.getInstance(_id)
-        }
-
-        // track enable
-        const reactionContext = globalState.getReactionContext()
-        if(reactionContext) {
-            const token = CollectionMiddleware.tokenBuilder({cond, val: _id, valGetter, table: Model.getTableName()})
-            reactionContext.track(token)
-        }
-    
-        return rtn
+        return this.find(cond).first()
     }
 
     static find = function (cond, options={}) {
         const Model = this
         const valGetter = () => {
+            // @TODO: memozie getter result if data is not changed
             const res = Connection.table(Model.getTableName()).find(cond, {[Model.getKeyName()]: true}).run()
             return _.get(res, 'data').map(item => item[Model.getKeyName()])
         }
-        const items = valGetter()
-        let rtn = Collection.getInstance(Model, items, options)
-
-        // track enable
-        const reactionContext = globalState.getReactionContext()
-        if(reactionContext) {
-            const token = CollectionMiddleware.tokenBuilder({initVal: items, valGetter, table: Model.getTableName()})
-            reactionContext.track(token)
-        }
-        return rtn
+        return Collection.getInstance(Model, {resolver: valGetter})
     }
 
 
