@@ -25,7 +25,7 @@ export const hasMany = (typeFunction:Function, options:hasManyOptions={}) => {
                 if(Array.isArray(val)) {
                     val = Collection.fromArray(val)
                 }
-                if(val.getType() === Model) {
+                if(val && val instanceof Collection && val.getType() === Model) {
                     _.set(data, ownerKey, val.keys())
                 }
                 delete data[property]
@@ -40,14 +40,14 @@ export const hasMany = (typeFunction:Function, options:hasManyOptions={}) => {
         Object.defineProperty(target, property, {
             get: function() {
                 const Model = typeFunction()
-                let itemIds = this.get(ownerKey)
-                if(!Array.isArray(itemIds)) {
-                    itemIds = []
-                }
-
-                return Model.find({[Model.getKeyName()]: {$in: itemIds}}, {onChange: (items) => {
-                    this[ownerKey] = items
-                }})
+                return Collection.getInstance(Model, {
+                    resolver: () => {
+                        return this.get(ownerKey, [])
+                    }, 
+                    onChange: (items) => {
+                        this[ownerKey] = items
+                    }
+                })
             },
             set: function(items) {
                 const Model = typeFunction()

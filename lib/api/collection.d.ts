@@ -119,6 +119,11 @@ export declare class Collection {
      */
     reverse(): Collection;
     /**
+     * Iterates over elements of collection, returning the first element callback returns truthy for.
+     * The callback is invoked with arguments: (value, index|key)
+     */
+    remove(callback: any): Collection;
+    /**
      * returns a slice of the collection starting at the given index without changing collection
      */
     slice(startIndex: any, length?: any): Collection;

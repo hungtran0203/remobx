@@ -281,6 +281,20 @@ export class Collection {
     }
 
     /**
+     * Iterates over elements of collection, returning the first element callback returns truthy for. 
+     * The callback is invoked with arguments: (value, index|key)
+     */
+    public remove(callback) {
+        const itemsToDelete = this.filter(callback).keys()
+        const items = _.filter(this.items, (id) => {
+            return itemsToDelete.indexOf(id) < 0
+        })
+        this._doChange(items)
+        return Collection.getInstance(this.Model, {items})
+    }
+    
+
+    /**
      * returns a slice of the collection starting at the given index without changing collection
      */
     public slice(startIndex, length?) {
