@@ -9,7 +9,7 @@ type ParsedToken = {
     cond: Object,
 }
 
-type SubscribeToken = {
+export type SubscribeToken = {
     valGetter: Function,
     type: string,
     table: string,

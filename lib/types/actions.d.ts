@@ -4,6 +4,7 @@ export declare enum ACTIONS {
     REPLACE = "replace",
     DELETE = "delete",
     QUERY = "query",
+    FIND = "find",
     LOAD = "load",
     BULK = "bulk",
 }

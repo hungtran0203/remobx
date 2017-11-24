@@ -1,14 +1,16 @@
 import ChangeToken from '../changeToken';
 export declare const PARSER_TYPE = "model";
+export declare type SubscribeToken = {
+    type: string;
+    table: string;
+    _id: string;
+    prop: string;
+    description?: string;
+};
 export default class ModelMiddleware {
     private store;
     static type: string;
-    static tokenBuilder(tableName: any, _id: any, prop: any): {
-        type: string;
-        table: any;
-        _id: any;
-        prop: any;
-    };
+    static tokenBuilder(tableName: any, _id: any, prop: any): SubscribeToken;
     constructor(store: any);
     protected data: {};
     private subscribers;

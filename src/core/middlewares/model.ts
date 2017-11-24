@@ -9,7 +9,7 @@ type ParsedToken = {
     prop: string,
 }
 
-type SubscribeToken = {
+export type SubscribeToken = {
     type: string,
     table: string,
     _id: string,

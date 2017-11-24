@@ -6,7 +6,7 @@ export declare class Query {
     private options;
     private actions;
     constructor(options?: {});
-    findById(id: any): Query;
+    findById(id: any, selection?: any): Query;
     findOne(): Query;
     find(cond: any, selection?: any): Query;
     insert(data: any): this;

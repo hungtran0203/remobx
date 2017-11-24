@@ -7,6 +7,7 @@ export declare class Store {
     insert(table: any, data: any): ChangeToken[];
     update(table: any, _id: any, query: any): ChangeToken[];
     query(table: any, cond: any, selection?: {}): any[];
+    find(table: any, id: any, selection?: {}): any;
     delete(table: any, _id: any): ChangeToken[];
     private transaction;
     startTransaction(): void;

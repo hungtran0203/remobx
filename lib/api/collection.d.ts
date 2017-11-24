@@ -1,11 +1,17 @@
+export declare type CollectionOptions = {
+    resolver?: Function;
+    items?: any[];
+    onChange?: Function;
+};
 export declare class Collection {
     private Model;
-    private items;
     private options;
-    constructor(Model: any, items: any, options?: {});
-    static getInstance(Model: any, items: any, options?: {}): Collection;
+    private readonly items;
+    constructor(Model: any, options?: CollectionOptions);
+    static getInstance(Model: any, options?: CollectionOptions): Collection;
     static fromArray(models: any): Collection;
     getType(): any;
+    private _track(items);
     /**
      * @returns the underlying array represented by the collection
      */
@@ -40,7 +46,7 @@ export declare class Collection {
      * filters the collection using the given callback, keeping only those items that pass a given truth test
      * @param callback
      */
-    filter(callback: any): Collection;
+    filter(predicate: any): Collection;
     /**
      * returns the first element in the collection that passes a given truth test
      * You may also call the first method with no arguments to get the first element in the collection
@@ -51,20 +57,20 @@ export declare class Collection {
      * returns the item at a given path. If the key does not exist, defaultValue || undefined is returned
      * @param path
      */
-    get(path: any, defaultValue?: any): void;
+    get(path: any, defaultValue?: any): any;
     /**
      * determines if a given key exists in the collection
      * @param key
      */
-    has(key: any): void;
+    has(key: any): boolean;
     /**
      * returns true if the collection is empty; otherwise, false is returned
      */
-    isEmpty(): void;
+    isEmpty(): boolean;
     /**
      * returns true if the collection is not empty; otherwise, false is returned
      */
-    isNotEmpty(): void;
+    isNotEmpty(): boolean;
     /**
      * returns all of the collection's key
      */
@@ -88,13 +94,13 @@ export declare class Collection {
      */
     partition(callback: any): Collection[];
     /**
-     * removes and returns the last item from the collection
+     * return new collection without the last item compares to the collection
      */
-    pop(): any;
+    pop(): Collection;
     /**
-     * add a new item to the end of the collection
+     * return new collection with the additional item at the end
      */
-    push(item: any): void;
+    push(item: any): Collection;
     /**
      * Creates a new collection concatenating the collection with any additional arrays and/or values.
      */
@@ -102,8 +108,8 @@ export declare class Collection {
     /**
      * removes and returns the first item from the collection
      */
-    shift(): any;
-    unshift(item: any): void;
+    shift(): Collection;
+    unshift(item: any): Collection;
     /**
      * reduces the collection to a single value, passing the result of each iteration into the subsequent iteration
      */
@@ -137,5 +143,5 @@ export declare class Collection {
      * return size of the collection
      */
     size(): any;
-    private _doChange();
+    private _doChange(items);
 }
