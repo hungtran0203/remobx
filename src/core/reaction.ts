@@ -54,48 +54,6 @@ export class Reaction {
         }
     }
 
-    // public track(obj, prop) {
-    //     if(!this.trackObjects.has(obj)) {
-    //         // init obj tracking
-    //         this.trackObjects.set(obj, new Set())
-    //         // tracking model prop
-    //         // if(obj && obj instanceof Model) {
-    //         //     // create store subscribe token
-    //         //     const token = {table: obj.getTableName(), _id: obj.getKey()}
-    //         //     const disposer = firebase.subscribe(SUBSCRIBE_TYPES.MODEL, token, (change) => {
-    //         //         const trackProps = this.trackObjects.get(obj)
-    //         //         let shouldUpdate = false
-    //         //         let runReasons = []
-    //         //         trackProps.forEach(prop => {
-    //         //             const isChanged = isChangedProp(obj, prop) as any
-    //         //             if(isChanged) {
-    //         //                 // update track val
-    //         //                 runReasons.push({
-    //         //                     prop,
-    //         //                     ...isChanged,
-    //         //                     target: obj,
-    //         //                 })
-    //         //                 shouldUpdate = true
-    //         //             }
-    //         //         })
-    //         //         if(shouldUpdate) {
-    //         //             this._runReasons = runReasons
-    //         //             this.update()
-    //         //         }
-    //         //     })
-    //         //     this.disposers.set(obj, disposer)
-    //         // }
-    //     }
-
-    //     // check for track trace
-    //     if(this._trackTrace) {
-    //         console.log(`[trackTrace] tracking@${this._isUpdating ? 'update' : 'init'}`, prop, obj)
-    //     }
-    //     const trackProps = this.trackObjects.get(obj)
-    //     // add tracking prop to target model
-    //     trackProps.add(prop)
-    // }
-
     public track(token) {
         const store = getStore()
         const disposer = store.subscribe(token, this)

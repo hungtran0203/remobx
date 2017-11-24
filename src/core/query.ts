@@ -1,5 +1,5 @@
 import {ACTIONS} from '../types/actions'
-import * as _ from 'lodash-es'
+let _ = require('lodash')
 import {getStore} from './store'
 
 export class QueryRes {

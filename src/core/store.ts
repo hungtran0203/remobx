@@ -1,7 +1,7 @@
 import ChangeToken from './changeToken'
 import Transaction from './transaction'
-import * as _ from 'lodash-es'
 
+let _ = require('lodash')
 let update = require('immutability-helper')
 let sift = require('sift')
 

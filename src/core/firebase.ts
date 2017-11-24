@@ -1,4 +1,4 @@
-import * as _ from 'lodash-es'
+let _ = require('lodash')
 import ReactionScheduler from './reactionScheduler'
 
 export default class FireBase {

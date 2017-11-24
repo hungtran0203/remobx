@@ -4,7 +4,7 @@ import {invariant} from '../utils'
 
 import {setDefinition} from './definition'
 import globalState from '../core/globalstate'
-import * as _ from 'lodash-es'
+let _ = require('lodash')
 
 export type FieldOptions = {
     validation?: Function | object,

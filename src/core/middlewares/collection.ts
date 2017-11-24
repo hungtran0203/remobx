@@ -1,15 +1,25 @@
 import ChangeToken from '../changeToken'
-import * as _ from 'lodash-es'
 import {ACTIONS} from '../../types/actions'
+import {Reaction} from '../reaction'
 export const PARSER_TYPE = 'collection'
 
+let _ = require('lodash')
 type ParsedToken = {
     tag: string,
     cond: Object,
 }
+
+type SubscribeToken = {
+    valGetter: Function,
+    type: string,
+    table: string,
+    initVal: any,
+    description?: string,
+}
+
 export default class CollectionMiddleware {
     static type = PARSER_TYPE
-    static tokenBuilder(options) {
+    static tokenBuilder(options): SubscribeToken | undefined {
         const {table} = options
         if(table) {
             return {
@@ -24,25 +34,35 @@ export default class CollectionMiddleware {
     protected data = {}
     private subscribers = new Map()
     private trackedTagsByReaction = new WeakMap()
+    private reactionVersionTracking = new WeakMap()
 
     private parseSubsToken(token): ParsedToken {
         const {type, valGetter, table} = token
         if(type === PARSER_TYPE && table && typeof valGetter === 'function') {
             return {
-                tag: this.serializeToken(token),
+                tag: this.getTagFromToken(token),
                 ...token,
             }
         }
     }
 
-    private setTrackedToken(reaction, tag, cond, token) {
-        this.getTrackedTokens(reaction, tag).set(cond, token)
+    private setTrackedToken(reaction, tag, valGetter, value) {
+        this.getTrackedTokens(reaction, tag).set(valGetter, value)
     }
 
     private getTrackedTokens(reaction, tag) {
-        if(!this.trackedTagsByReaction.has(reaction)) {
+        /**
+         * each reaction has a list of token onTracked,
+         * the onTracked Token list is wipe out each time reaction version is changed
+         */
+        const currentVersion = reaction.getVersion()
+        const trackedVersion = this.reactionVersionTracking.get(reaction)
+        if(currentVersion !== trackedVersion) {
+            // update tracked version and wipe out tracked token list of the reaction
+            this.reactionVersionTracking.set(reaction, currentVersion)
             this.trackedTagsByReaction.set(reaction, new Map())
         }
+
         const trackedTagsByReaction = this.trackedTagsByReaction.get(reaction)
         if(!trackedTagsByReaction.has(tag)) {
             trackedTagsByReaction.set(tag, new Map())
@@ -50,32 +70,34 @@ export default class CollectionMiddleware {
         return trackedTagsByReaction.get(tag)
     }
 
-    public subscribe(token, reaction) {
+    public subscribe(token: SubscribeToken, reaction: Reaction) {
         let _token: ParsedToken = this.parseSubsToken(token)
+        const tag = this.getTagFromToken(token)
         if(_token) {
-            if(!this.subscribers.has(_token.tag)) {
-                this.subscribers.set(_token.tag, new Set())
+            if(!this.subscribers.has(tag)) {
+                this.subscribers.set(tag, new Set())
             }
-            const tokenSubscribers = this.subscribers.get(_token.tag)
+            const subscribers = this.subscribers.get(tag)
 
-            tokenSubscribers.add(reaction)
+            subscribers.add(reaction)
 
             // store prop value at subscribe time
-            const {cond} = token
-            this.setTrackedToken(reaction, _token.tag, cond, _token)
+            // use valGetter as track key
+            const {valGetter, initVal} = token
+            this.setTrackedToken(reaction, tag, valGetter, initVal)
 
             if(reaction.isTrackEnabled()) {
-                console.log(`[trackTrace] tracking`, _token.tag, cond)
+                console.log(`[trackTrace] tracking`, tag, token.description, initVal)
             }
 
             return () => {
-                tokenSubscribers.delete(reaction)
+                subscribers.delete(reaction)
             }    
         }
     }
 
     public dispatch(change: ChangeToken) {
-        const tag = this.serializeToken(change)
+        const tag = this.getTagFromToken(change)
         const reactionSubscribers = this.subscribers.get(tag)
         const rtn = []
         const {action, table, _id} = change as any
@@ -88,9 +110,8 @@ export default class CollectionMiddleware {
                         const trackedConditions = this.getTrackedTokens(reaction, tag)
                         // check if value is changed
                         let shouldUpdate = false
-                        trackedConditions.forEach((token, cond) => {
+                        trackedConditions.forEach((val, valGetter) => {
                             // const newVal = 
-                            const {val, valGetter} = token
                             const newVal = valGetter()
                             if(!_.isEqual(val, newVal)) {
                                 reaction.addRunReason({
@@ -103,6 +124,9 @@ export default class CollectionMiddleware {
                                     reason: 'collection update'
                                 })
                                 shouldUpdate = true
+
+                                // update track val
+                                // token.val = newVal
                             }
                         })
                         if(shouldUpdate) {
@@ -115,7 +139,7 @@ export default class CollectionMiddleware {
         return rtn
     }
 
-    private serializeToken(token) {
+    private getTagFromToken(token) {
         return `${token.table}`
     }
 }

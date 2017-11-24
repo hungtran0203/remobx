@@ -1,5 +1,5 @@
 import Connection from '../core/connection'
-import * as _ from 'lodash-es'
+let _ = require('lodash')
 import CollectionMiddleware from '../core/middlewares/collection'
 import globalState from '../core/globalstate'
 import {Collection} from './collection'
@@ -135,7 +135,7 @@ export abstract class Model {
         // track enable
         const reactionContext = globalState.getReactionContext()
         if(reactionContext) {
-            const token = CollectionMiddleware.tokenBuilder({cond, val: items, valGetter, table: Model.getTableName()})
+            const token = CollectionMiddleware.tokenBuilder({initVal: items, valGetter, table: Model.getTableName()})
             reactionContext.track(token)
         }
         return rtn
