@@ -60,13 +60,15 @@ export const select = (object, proj) => {
 }
 
 export const traverse = (obj: Object, cb: (path: string, field: string, value: any) => void, path='') => {
-    Object.keys(obj).map(key => {
-        const field = key
-        const subPath = path ? `${path}.${field}` : field
-        if(cb(subPath, field, obj[key])) {
-            traverse(obj[key], cb, subPath)
-        }
-    })
+    if(typeof obj === 'object') {
+        Object.keys(obj).map(key => {
+            const field = key
+            const subPath = path ? `${path}.${field}` : field
+            if(cb(subPath, field, obj[key])) {
+                traverse(obj[key], cb, subPath)
+            }
+        })    
+    }
 }
 
 export const visit = traverse
