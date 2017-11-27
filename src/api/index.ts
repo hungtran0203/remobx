@@ -1,4 +1,5 @@
 export * from './autorun'
+export * from './observer'
 export * from './collection'
 export * from './definition'
 export * from './field'
