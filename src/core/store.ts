@@ -11,6 +11,7 @@ import * as objUtils from '../utils/object'
 import Firebase from './firebase'
 
 import {invariant} from '../utils'
+import {getTableKey} from '../api/definition'
 
 export class Store {
     private data = {}
@@ -112,7 +113,7 @@ export class Store {
     }
 
     static _getKeyName(table) {
-        const keyName = '_id'
+        const keyName = getTableKey(table) || '_id'
         return keyName
     }
 

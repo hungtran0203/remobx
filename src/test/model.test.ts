@@ -1,7 +1,13 @@
-import {autorun, Field, Model, Table} from '../remobx'
+import {autorun, Field, Model, Table, TableHookType} from '../remobx'
 
 @Table({
     tableName: 'items',
+    hooks: [{
+        type: TableHookType.BEFORE_INSERT,
+        handler: function (data, opt) {
+            console.log('ddddd', data, opt, this.getKeyName())
+        }
+    }]
 })
 export default class Todo extends Model {
     @Field({defaultValue: 'New Item'})

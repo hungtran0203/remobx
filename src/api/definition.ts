@@ -19,3 +19,13 @@ export const listDefinitions = (target) => {
         return Reflect.getMetadata(metaKey, target)
     }
 }
+
+const _tableKeys = new Map()
+
+export const setTableKey = (table, keyName) => {
+    _tableKeys.set(table, keyName)
+}
+
+export const getTableKey = (table) => {
+    return _tableKeys.get(table)
+}

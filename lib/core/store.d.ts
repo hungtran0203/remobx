@@ -14,7 +14,7 @@ export declare class Store {
     endTransaction(): void;
     private dispatchChanges(changes);
     static _getKey(table: any, data: any): any;
-    static _getKeyName(table: any): string;
+    static _getKeyName(table: any): any;
     debug(): void;
     get(table: any, _id: any, property?: any, defaultValue?: any): any;
     subscribe(...args: any[]): any;

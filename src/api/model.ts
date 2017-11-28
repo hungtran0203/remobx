@@ -3,14 +3,33 @@ let _ = require('lodash')
 import ModelMiddleware from '../core/middlewares/model'
 import globalState from '../core/globalstate'
 import {Collection} from './collection'
-import {listDefinitions} from './definition'
+import {listDefinitions, setTableKey} from './definition'
 
-const registerTable = (target, options={}) => {
-    const {tableName, keyName = '_id'} = options as any
+export type TableOptions = {
+    tableName: string,
+    keyName?: string,
+    hooks?: TableHooks[],
+}
 
+export type TableHooks = {
+    type: TableHookType,
+    handler: Function
+}
+
+export enum TableHookType {
+    BEFORE_INSERT = 'beforeInsert',
+    AFTER_INSERT = 'afterInsert',
+    BEFORE_DELETE = 'beforeDelete',
+    AFTER_DELETE = 'afterDelete',
+}
+
+const registerTable = (target, options:TableOptions) => {
+    const {tableName, keyName = '_id', hooks = []} = options as any
+    
     const Model = target
     Model.tableName = tableName
     Model.keyName = keyName
+    setTableKey(tableName, keyName)
 
     /********** static methods **********/
     Model.getKeyName = function() {
@@ -19,6 +38,18 @@ const registerTable = (target, options={}) => {
 
     Model.getTableName = function() {
         return tableName
+    }
+
+    Model.applyHook = function(name, args, thisArgs) {
+        thisArgs = thisArgs || this
+        hooks.filter(hook => {
+            if(_.get(hook, `type`) === name) {
+                const handler = _.get(hook, `handler`)
+                if(typeof handler === 'function') {
+                    handler.apply(thisArgs, args)
+                }
+            }
+        })
     }
 
     /********** prototype methods **********/
@@ -31,9 +62,12 @@ const registerTable = (target, options={}) => {
         return tableName
     }
 
+    Model.prototype.applyHook = function(name, args) {
+        Model.applyHook(name, args, this)
+    }
 }
 
-export const Table = (options={}) => {
+export const Table = (options:TableOptions) => {
     return (target) => {
         registerTable(target, options)
     }
@@ -73,15 +107,24 @@ export abstract class Model {
         return this.insert(data)
     }
 
-    static insert = function (data) {
-        const res = Connection.table(this.getTableName()).insert(this.ensureData(data)).run()
+    static insert = function (data, opt?) {
+        const insertData = this.ensureData(data)
+
+        // hook
+        this.applyHook(TableHookType.BEFORE_INSERT, [data, opt])
+
+        const res = Connection.table(this.getTableName()).insert(insertData).run()
         const {changes} = res
         let rtn
         if(Array.isArray(changes) && changes.length) {
             const _id = _.get(changes, '0._id')
             rtn = this.getInstance(_id)
         }
-        return rtn        
+
+        // hook
+        this.applyHook(TableHookType.AFTER_INSERT, [data, opt, changes])
+        
+        return rtn
     }
 
     static findById = function (_id) {
