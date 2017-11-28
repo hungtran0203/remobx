@@ -65,6 +65,7 @@ const registerTable = (target, options:TableOptions) => {
     Model.prototype.applyHook = function(name, args) {
         Model.applyHook(name, args, this)
     }
+
 }
 
 export const Table = (options:TableOptions) => {
@@ -74,7 +75,9 @@ export const Table = (options:TableOptions) => {
 }
 
 export abstract class Model {
-    constructor(protected _id){}
+    constructor(protected _id){
+        this[this.getKeyName()] = _id
+    }
 
     static _cacheModelInstances = new Map()
     static getKeyName: () => any

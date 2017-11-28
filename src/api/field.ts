@@ -40,7 +40,7 @@ export const Field = (options:FieldOptions={}) => (target, property) => {
                 const token = ModelMiddleware.tokenBuilder(this.getTableName(), this.getKey(), property)
                 reactionContext.track(token)
             }
-            const propVal = store.get(this.getTableName(), this._id, property, defaultValue)
+            const propVal = store.get(this.getTableName(), this.getKey(), property, defaultValue)
             return propVal
         },
         set: function(newVal) {
