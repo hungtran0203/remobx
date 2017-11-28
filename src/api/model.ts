@@ -127,6 +127,16 @@ export abstract class Model {
         return rtn
     }
 
+    static findOrNew = function (data, opt?) {
+        const _data = this.ensureData(data)
+
+        let found = this.findOne(_data)
+        if(!found) {
+            found = this.insert(_data)
+        }
+        return found
+    }
+
     static findById = function (_id) {
         const Model = this
         const query = Connection.table(Model.getTableName()).findById(_id, {[Model.getKeyName()]: true}).run()

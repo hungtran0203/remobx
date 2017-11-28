@@ -23,6 +23,10 @@ export const hasMany = (typeFunction:Function, options:hasManyOptions={}) => {
                 const Model = typeFunction()                
                 let val = _.get(data, property)
                 if(Array.isArray(val)) {
+                    val = val.map(item => {
+                        // check for item exist
+                        return Model.findOrNew(item)
+                    })
                     val = Collection.fromArray(val)
                 }
                 if(val && val instanceof Collection && val.getType() === Model) {

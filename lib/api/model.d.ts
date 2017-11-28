@@ -25,6 +25,7 @@ export declare abstract class Model {
     static ensureData: (data: any, options?: {}) => any;
     static new: (data: any) => any;
     static insert: (data: any, opt?: any) => any;
+    static findOrNew: (data: any, opt?: any) => any;
     static findById: (_id: any) => any;
     static findOne: (cond: any) => any;
     static find: (cond: any, options?: {}) => Collection;
