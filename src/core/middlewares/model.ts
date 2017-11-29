@@ -52,11 +52,13 @@ export default class ModelMiddleware {
         if(!this.trackedTagsByReaction.has(reaction)) {
             this.trackedTagsByReaction.set(reaction, new Map())
         }
-        const trackedTagsByReaction = this.trackedTagsByReaction.get(reaction)
-        if(!trackedTagsByReaction.has(tag)) {
-            trackedTagsByReaction.set(tag, new Map())
+
+        const rtn = this.trackedTagsByReaction.get(reaction)
+        if(!rtn.has(tag)) {
+            rtn.set(tag, new Map())
         }
-        return trackedTagsByReaction
+
+        return rtn.get(tag)
     }
 
     public subscribe(token, reaction) {
@@ -82,13 +84,16 @@ export default class ModelMiddleware {
         }
     }
 
-    public dispatch(change: ChangeToken) {
+    public dispatch(change: ChangeToken, scheduler) {
         const tag = this.serializeToken(change)
         const reactionSubscribers = this.subscribers.get(tag)
         const rtn = []
         const {table, _id, action} = change as any
         if(reactionSubscribers) {
             reactionSubscribers.forEach(reaction => {
+                // fast skip reaction alread scheduled for updating
+                if(scheduler.hasReaction(reaction)) return
+
                 switch(action) {
                     case ACTIONS.INSERT:
                     case ACTIONS.DELETE:
@@ -109,7 +114,8 @@ export default class ModelMiddleware {
                                         prop,
                                     },
                                     oldVal: value,
-                                    newVal
+                                    newVal,
+                                    reason: 'model update'
                                 })
                                 shouldUpdate = true
                             }

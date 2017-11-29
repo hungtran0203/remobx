@@ -15,8 +15,7 @@ it('test', () => {
     autorun(() => {
         const qrData = State.findOne({name: 'qrData'})
         if(qrData) {
-            let text = `abcd: ${qrData.value}`
-            console.log('tttt', text)
+            `abcd: ${qrData.value}`
         }
         
     })

@@ -4,9 +4,7 @@ import {autorun, Field, Model, Table, TableHookType} from '../remobx'
     tableName: 'items',
     hooks: [{
         type: TableHookType.BEFORE_INSERT,
-        handler: function (data, opt) {
-            console.log('ddddd', data, opt, this.getKeyName())
-        }
+        handler: function (data, opt) {}
     }]
 })
 export default class Todo extends Model {

@@ -67,3 +67,29 @@ it('autorun when collection size changes only', () => {
     expect(autoFn).toHaveBeenCalledTimes(3)
     expect(size).toBe(1)
 })
+
+it('tail tracking for nested autorun function', () => {
+    let testId = 'tail tracking for nested autorun function'
+    let todoTitle = 'todoTitle'
+    const todo1 = Todo.insert({testId, ordering:0, title: `${todoTitle}_1`})
+    const todo2 = Todo.insert({testId, ordering:0, title: `${todoTitle}_2`})
+
+    let todo1Title, todo2Title
+    const nestedAutoFn = jest.fn().mockImplementation(() => {
+        const todo = Todo.findById(todo2.getKey())
+        // tail tracking will be lose, update it here
+        todo2Title = todo.title
+    })
+    const autoFn = jest.fn().mockImplementation(() => {
+        const todo = Todo.findById(todo1.getKey())
+        autorun(nestedAutoFn)
+
+        // define tail tracking 
+        todo1Title = todo.title
+    })
+    autorun(autoFn)
+    expect(autoFn).toHaveBeenCalledTimes(1)
+
+    todo1.title = 'change'
+    expect(autoFn).toHaveBeenCalledTimes(2)
+})

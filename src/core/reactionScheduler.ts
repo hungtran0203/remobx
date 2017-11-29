@@ -1,4 +1,5 @@
 import {Reaction} from './reaction'
+import globalState from './globalstate'
 
 export default class ReactionScheduler {
     private reactions = new Set()
@@ -11,6 +12,7 @@ export default class ReactionScheduler {
         }
     }
     public run() {
+        globalState.isProfilingEnable() && console.time('perform reaction')
         this.reactions.forEach(r => {
             if(typeof r === 'function') {
                 r()
@@ -19,5 +21,10 @@ export default class ReactionScheduler {
                 r.update()
             }
         })
+        globalState.isProfilingEnable() && console.timeEnd('perform reaction')
+    }
+
+    public hasReaction(reaction) {
+        return this.reactions.has(reaction)
     }
 }

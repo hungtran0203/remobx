@@ -1,5 +1,6 @@
 let _ = require('lodash')
 import ReactionScheduler from './reactionScheduler'
+import globalState from './globalstate'
 
 export default class FireBase {
     private middlewares = []
@@ -28,11 +29,15 @@ export default class FireBase {
     public dispatch(changes) {
         const scheduler = new ReactionScheduler()
         changes = Array.isArray(changes) ? changes : [changes]
+        globalState.isProfilingEnable() && console.time('change processing')
         changes.map(change => {
+            globalState.isProfilingEnable(2) && console.time(`change token ${change._id}`)
             this.middlewares.map(parser => {
-                scheduler.add(parser.dispatch(change))
+                scheduler.add(parser.dispatch(change, scheduler))
             })    
+            globalState.isProfilingEnable(2) && console.timeEnd(`change token ${change._id}`)
         })
+        globalState.isProfilingEnable() && console.timeEnd('change processing')
         scheduler.run()
     }
 }

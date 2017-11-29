@@ -43,13 +43,13 @@ export class Reaction {
 
     public update() {
         try {
-            globalState._updatingReaction = this
+            globalState.pushReaction(this)
             this._isUpdating = true
             this._v ++
             this.run()    
         }
         finally {
-            globalState._updatingReaction = undefined
+            globalState.popReaction()
             this._isUpdating = false
         }
     }

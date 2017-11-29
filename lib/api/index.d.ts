@@ -7,4 +7,5 @@ export * from './model';
 export * from './trackTrace';
 export * from './transaction';
 export * from './whyRun';
+export * from './debug';
 export * from './relations';

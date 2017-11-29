@@ -21,6 +21,6 @@ export default class CollectionMiddleware {
     private setTrackedToken(reaction, tag, valGetter, value);
     private getTrackedTokens(reaction, tag);
     subscribe(token: SubscribeToken, reaction: Reaction): () => void;
-    dispatch(change: ChangeToken): any[];
+    dispatch(change: ChangeToken, scheduler: any): any[];
     private getTagFromToken(token);
 }

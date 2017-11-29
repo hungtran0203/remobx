@@ -96,13 +96,16 @@ export default class CollectionMiddleware {
         }
     }
 
-    public dispatch(change: ChangeToken) {
+    public dispatch(change: ChangeToken, scheduler) {
         const tag = this.getTagFromToken(change)
         const reactionSubscribers = this.subscribers.get(tag)
         const rtn = []
         const {action, table, _id} = change as any
         if(reactionSubscribers) {
             reactionSubscribers.forEach(reaction => {
+                // fast skip reaction alread scheduled for updating
+                if(scheduler.hasReaction(reaction)) return
+
                 switch(action) {
                     case ACTIONS.INSERT:
                     case ACTIONS.DELETE:

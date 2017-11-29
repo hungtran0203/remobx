@@ -19,6 +19,6 @@ export default class ModelMiddleware {
     private setTrackedPropVal(reaction, tag, prop, val);
     private getTrackedProps(reaction, tag);
     subscribe(token: any, reaction: any): () => void;
-    dispatch(change: ChangeToken): any[];
+    dispatch(change: ChangeToken, scheduler: any): any[];
     private serializeToken(token);
 }
