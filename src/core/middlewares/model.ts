@@ -75,7 +75,7 @@ export default class ModelMiddleware {
             this.setTrackedPropVal(reaction, _token.tag, prop, this.store.get(table, _id, prop))
 
             if(reaction.isTrackEnabled()) {
-                console.log(`[trackTrace] tracking`, _token.tag, prop)
+                console.log(`[trackTrace] reaction@${reaction.getHashKey()} tracking, ${_token.tag}, ${prop}`)
             }
             
             return () => {

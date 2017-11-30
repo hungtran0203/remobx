@@ -12,7 +12,7 @@ export default class ReactionScheduler {
         }
     }
     public run() {
-        globalState.isProfilingEnable() && console.time('perform reaction')
+        globalState.isProfilingEnable() && console.time(`perform ${this.reactions.size} reactions in`)
         this.reactions.forEach(r => {
             if(typeof r === 'function') {
                 r()
@@ -21,7 +21,7 @@ export default class ReactionScheduler {
                 r.update()
             }
         })
-        globalState.isProfilingEnable() && console.timeEnd('perform reaction')
+        globalState.isProfilingEnable() && console.timeEnd(`perform ${this.reactions.size} reactions in`)
     }
 
     public hasReaction(reaction) {

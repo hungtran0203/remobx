@@ -3,6 +3,7 @@ let _ = require('lodash')
 import ModelMiddleware from '../core/middlewares/model'
 import globalState from '../core/globalstate'
 import {Collection} from './collection'
+import {untrack} from './untrack'
 import {listDefinitions, setTableKey} from './definition'
 
 export type TableOptions = {
@@ -131,12 +132,14 @@ export abstract class Model {
     }
 
     static findOrNew = function (data, opt?) {
-        const _data = this.ensureData(data)
+        untrack(() => {
+            let found = this.findOne(data)
+            if(!found) {
+                found = this.insert(data)
+            }
+        })
 
-        let found = this.findOne(_data)
-        if(!found) {
-            found = this.insert(_data)
-        }
+        let found = this.findOne(data)
         return found
     }
 

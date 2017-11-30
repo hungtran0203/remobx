@@ -1,5 +1,6 @@
-import {autorun, Field, Model, Table, TableHookType} from '../remobx'
+import {autorun, Field, Model, Table, TableHookType, trackTrace, debug} from '../remobx'
 
+import globalState from '../core/globalstate'
 @Table({
     tableName: 'items',
     hooks: [{
@@ -47,5 +48,31 @@ it('autorun when collection size changes only', () => {
     expect(title).toBe(undefined)
 
     todo.title = 'new'
+})
+
+it('findOrNew', () => {
+    let todoTitle = 'findOrNew'
+    let todo
+    let todoIds = new Set()
+    const autoFn = jest.fn().mockImplementation(() => {
+        todo = Todo.findOrNew({title: todoTitle})
+        todoIds.add(todo.getKey())
+
+        // trigger track
+        todo.status
+        trackTrace(false)
+    })
+    autorun(autoFn)
+
+    expect(autoFn).toHaveBeenCalledTimes(1)
+    expect(todoIds.size).toBe(1)
+
+    todo.status = !todo.status
+    expect(autoFn).toHaveBeenCalledTimes(2)
+    expect(todoIds.size).toBe(1)
+
+    todo.status = !todo.status
+    expect(autoFn).toHaveBeenCalledTimes(3)
+    expect(todoIds.size).toBe(1)
 })
 

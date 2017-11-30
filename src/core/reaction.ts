@@ -46,7 +46,8 @@ export class Reaction {
             globalState.pushReaction(this)
             this._isUpdating = true
             this._v ++
-            this.run()    
+            globalState.isProfilingEnable(2) && console.log(`updating reaction@${this.getHashKey()} - v: ${this.getVersion()}`)
+            this.run()
         }
         finally {
             globalState.popReaction()
