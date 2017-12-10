@@ -1,4 +1,4 @@
-let _ = require('lodash')
+import * as _ from 'lodash'
 import {Column} from '../column'
 import {invariant} from '../../utils'
 import {setDefinition} from '../definition'

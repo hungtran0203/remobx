@@ -1,4 +1,4 @@
-let _ = require('lodash')
+import * as _ from 'lodash'
 import {setEntityKey} from './definition'
 
 import {observable, untracked, observe, extendObservable, computed} from 'mobx'

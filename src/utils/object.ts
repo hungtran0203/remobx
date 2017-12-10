@@ -1,4 +1,4 @@
-let _ = require('lodash')
+import * as _ from 'lodash'
 
 export const isObject = (val) => {
     return (typeof val === 'object') && val !== null && !Array.isArray(val)

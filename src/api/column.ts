@@ -3,7 +3,7 @@ import {invariant} from '../utils'
 import {setDefinition} from './definition'
 import {observable} from 'mobx'
 
-let _ = require('lodash')
+import * as _ from 'lodash'
 
 export type FieldOptions = {
     validation?: Function | object,

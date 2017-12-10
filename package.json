@@ -15,12 +15,13 @@
     "normalizr": "^3.2.4",
     "sift": "^5.0.0",
     "uuid": "^3.1.0",
+    "reflect-metadata": "^0.1.10",
     "mobx": "^2.6.3 || ^3.0.0"
   },
   "dependencies": {
-    "reflect-metadata": "^0.1.10"
   },
   "devDependencies": {
+    "reflect-metadata": "^0.1.10",
     "react-scripts-ts": "2.5.0",
     "@types/immutability-helper": "^2.0.15",
     "@types/invariant": "^2.2.29",

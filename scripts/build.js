@@ -56,7 +56,7 @@ function generateBundledModule(inputFile, outputFile, format) {
     return rollup
         .rollup({
             input: inputFile,
-            external: ["mobx"],
+            external: ["mobx", "lodash", "uuid", "reflect-metadata"],
             plugins: rollupPlugins
         })
         .then(bundle =>

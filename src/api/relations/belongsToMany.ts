@@ -1,4 +1,4 @@
-let _ = require('lodash')
+import * as _ from 'lodash'
 import {Collection} from '../collection'
 
 import {invariant} from '../../utils'

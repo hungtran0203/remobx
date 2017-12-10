@@ -1,1 +1,1 @@
-export declare const uuid: () => any;
+export declare const uuid: () => string;
