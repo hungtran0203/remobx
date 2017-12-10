@@ -22,10 +22,10 @@ export const listDefinitions = (target) => {
 
 const _tableKeys = new Map()
 
-export const setTableKey = (table, keyName) => {
+export const setEntityKey = (table, keyName) => {
     _tableKeys.set(table, keyName)
 }
 
-export const getTableKey = (table) => {
+export const getEntityKey = (table) => {
     return _tableKeys.get(table)
 }

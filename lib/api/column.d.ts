@@ -3,4 +3,4 @@ export declare type FieldOptions = {
     defaultValue?: any;
     isRequired?: string | boolean;
 };
-export declare const Field: (options?: FieldOptions) => (target: any, property: any) => void;
+export declare const Column: (options?: FieldOptions) => (target: any, property: any) => void;
