@@ -41,13 +41,26 @@ class Todo extends Model {
     public followers = []
 }
 
+@Entity({tableName: 'items', keyName: 'id'})
+export class ItemModel extends Model {
+    /**
+     * define property here
+     */
+    createdAt
+
+    @Column({defaultValue:'xxxx'})
+    imageUrl
+
+    updatedAt
+}
+
 it('debug1', () => {
-    const todo = Todo.insert({_id: `_init`, testId: 'abd'})
+    const item = ItemModel.insert({})
     autorun(() => {
-        console.log(Object.keys(todo))
-        console.log(todo.title, todo, todo.data, todo.arr)
+        console.log(Object.keys(item))
+        console.log('itemitemitem', item.imageUrl, )
     })
-    todo.title = 'xyz'
+    item.imageUrl = 'xyz'
 })
 
 it('autorun when collection size changes only', () => {
