@@ -1,7 +1,7 @@
 import {invariant} from '../utils'
 
 import {setDefinition} from './definition'
-import {extendObservable} from 'mobx'
+import {observable, extendObservable} from 'mobx'
 
 import * as _ from 'lodash'
 

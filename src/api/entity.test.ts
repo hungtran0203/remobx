@@ -25,6 +25,9 @@ class Todo extends Model {
     @Column()
     public testId: string
 
+    @Column({defaultValue: 'title'})
+    public title: string
+
     @Column()
     public data = {field1: 'x', field2: 'y'}
 
@@ -38,6 +41,14 @@ class Todo extends Model {
     public followers = []
 }
 
+it('debug1', () => {
+    const todo = Todo.insert({_id: `_init`, testId: 'abd'})
+    autorun(() => {
+        console.log(Object.keys(todo))
+        console.log(todo.title, todo, todo.data, todo.arr)
+    })
+    todo.title = 'xyz'
+})
 
 it('autorun when collection size changes only', () => {
     // console.log('ddldlasldxxx', extras.getGlobalState())
