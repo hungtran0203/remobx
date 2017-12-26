@@ -112,7 +112,7 @@ export abstract class Model {
     }
 
     static findOrNew = function (data, opt?) {
-        untrack(() => {
+        untracked(() => {
             const rtn = this.findOne(data)
             if(!rtn) {
                 return this.insert(data, opt)
@@ -233,6 +233,7 @@ export abstract class Model {
     }
 
     public update(data) {
+
     }
 
     public delete() {

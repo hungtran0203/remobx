@@ -1,7 +1,7 @@
 import {invariant} from '../utils'
 
 import {setDefinition} from './definition'
-import {observable} from 'mobx'
+import {extendObservable} from 'mobx'
 
 import * as _ from 'lodash'
 
@@ -30,5 +30,5 @@ export const Column = (options:FieldOptions={}) => (target, property) => {
         },
     })
 
-    observable(target, property)
+    extendObservable(target, {[property]: defaultValue})
 }
