@@ -1,7 +1,7 @@
 import {invariant} from '../utils'
 
 import {setDefinition} from './definition'
-import {observable} from 'mobx'
+// import {observable} from 'mobx'
 
 import * as _ from 'lodash'
 
@@ -19,6 +19,7 @@ export const Column = (options:FieldOptions={}) => (target, property) => {
         ...options, 
         name: 'Column', 
         type: Column,
+        defaultValue,
         ensureData: (data, opt={}) => {
             let val = _.get(data, property, defaultValue)
             val = typeof val === 'function' ? val() : val
@@ -30,6 +31,6 @@ export const Column = (options:FieldOptions={}) => (target, property) => {
         },
     })
 
-    observable.bind(target)(target, property)
+    // observable.bind(target)(target, property)
     // observable(target, property)
 }

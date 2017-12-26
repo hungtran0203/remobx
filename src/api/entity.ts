@@ -1,8 +1,9 @@
 import * as _ from 'lodash'
-import {setEntityKey} from './definition'
+import {setEntityKey, listDefinitions} from './definition'
 
 import {observable, untracked, observe, extendObservable, computed} from 'mobx'
 import { uuid } from '../utils/uuid';
+import { Column } from './column';
 
 export type EntityOptions = {
     tableName: string,
@@ -84,6 +85,17 @@ export abstract class Model {
     constructor(data){
         const _sanitizedData = data
         Object.assign(this, {[this.getKeyName()]: uuid()}, _sanitizedData)
+
+        // setup observable property
+        const defs = listDefinitions(this.constructor)
+        const obj = {}
+        defs.forEach((def, prop) => {
+            const {type, defaultValue} = def
+            if(type === Column) {
+                obj[prop] = defaultValue
+            }
+        })
+        extendObservable(this, obj)
     }
 
     public static _store = new DataStore()
